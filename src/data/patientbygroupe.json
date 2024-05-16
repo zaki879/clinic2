@@ -1,0 +1,14 @@
+[
+  {
+    "label": "Elderly",
+    "value": 5
+  },
+  {
+    "label": "Adult",
+    "value": 20
+  },
+  {
+    "label": "Child",
+    "value": 40
+  }
+]
