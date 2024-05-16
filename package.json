@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^4.0.1",
     "@ashwinthomas/react-time-picker-dropdown": "^1.0.5",
     "@bitnoi.se/react-scheduler": "^0.1.5",
     "@date-io/date-fns": "^3.0.0",
