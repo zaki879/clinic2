@@ -48,7 +48,7 @@ const CustomComponent = ({
   const deleteScheduleById = (scheduleId) => {
     // Make a DELETE request to your API endpoint to delete the schedule
     axios
-      .delete(`https://beep-didm.onrender.com/api/schedules/${scheduleId}`, {
+      .delete(`https://beep-zlaa.onrender.com/api/schedules/${scheduleId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -67,7 +67,7 @@ const CustomComponent = ({
     const refreshTokenf = async () => {
       try {
         const response = await axios.post(
-          "https://beep-didm.onrender.com/api/auth/refresh-token",
+          "https://beep-zlaa.onrender.com/api/auth/refresh-token",
           {
             refreshToken: refreshToken,
           }
@@ -77,7 +77,7 @@ const CustomComponent = ({
         localStorage.setItem("accessToken", accessToken);
 
         axios
-          .get("https://beep-didm.onrender.com/api/schedules", {
+          .get("https://beep-zlaa.onrender.com/api/schedules", {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -235,7 +235,7 @@ const YourComponent = (props) => {
     const refreshTokenf = async () => {
       try {
         const response = await axios.post(
-          "https://beep-didm.onrender.com/api/auth/refresh-token",
+          "https://beep-zlaa.onrender.com/api/auth/refresh-token",
           {
             refreshToken: refreshToken,
           }
@@ -244,7 +244,7 @@ const YourComponent = (props) => {
         setaccessToken(accessToken);
         localStorage.setItem("accessToken", accessToken);
         const positionsResponse = await axios.get(
-          "https://beep-didm.onrender.com/api/positions",
+          "https://beep-zlaa.onrender.com/api/positions",
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -258,7 +258,7 @@ const YourComponent = (props) => {
         setIsLoading(false);
         // Now fetch users with the updated access token
         axios
-          .get("https://beep-didm.onrender.com/api/users", {
+          .get("https://beep-zlaa.onrender.com/api/users", {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -277,7 +277,7 @@ const YourComponent = (props) => {
             setIsLoading(false); // Set loading state to false after request completes
           });
         axios
-          .get("https://beep-didm.onrender.com/api/schedules", {
+          .get("https://beep-zlaa.onrender.com/api/schedules", {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -863,7 +863,7 @@ const Schedule = () => {
     const refreshTokenf = async () => {
       try {
         const response = await axios.post(
-          "https://beep-didm.onrender.com/api/auth/refresh-token",
+          "https://beep-zlaa.onrender.com/api/auth/refresh-token",
           {
             refreshToken: refreshToken,
           }
@@ -872,7 +872,7 @@ const Schedule = () => {
         setaccessToken(accessToken);
         localStorage.setItem("accessToken", accessToken);
         const positionsResponse = await axios.get(
-          "https://beep-didm.onrender.com/api/positions",
+          "https://beep-zlaa.onrender.com/api/positions",
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -886,7 +886,7 @@ const Schedule = () => {
         setIsLoading(false);
         // Now fetch users with the updated access token
         axios
-          .get("https://beep-didm.onrender.com/api/schedules", {
+          .get("https://beep-zlaa.onrender.com/api/schedules", {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -907,7 +907,7 @@ const Schedule = () => {
             setIsLoading(false); // Set loading state to false after request completes
           });
         axios
-          .get("https://beep-didm.onrender.com/api/users", {
+          .get("https://beep-zlaa.onrender.com/api/users", {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -1033,7 +1033,7 @@ const Schedule = () => {
   
     axios
       .post(
-        "https://beep-didm.onrender.com/api/schedules/bulk",
+        "https://beep-zlaa.onrender.com/api/schedules/bulk",
         schedulesArray,
         {
           headers: {

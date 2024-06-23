@@ -67,9 +67,13 @@
     "logintext64": "There is no employee close to this hour.",
     "logintext65": "RoomNumber ",
     "logintext66": "RoomType ",
-    "logintext67": "Add Room",
+    "logintext67": "Clinic Space",
     "logintext68": "Add Speciality",
-    "logintext69": "  ",
-    "logintext70": "  "
+    "logintext69": "Floor Number",
+    "logintext70": "Floor Number or Floor Name",
+    "logintext71": "Floors",
+    "logintex72": "Select a Floor",
+    "logintex73": "ON",
+    "logintex74": "OFF"
     
 }

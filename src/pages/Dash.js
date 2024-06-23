@@ -16,15 +16,16 @@ import Seconchart from "../components/SecondPiechart";
 import userinfos from "../assets/copy.png";
 import emailicon from "../assets/emailicon1.png";
 import phone from "../assets/phone.png";
-import { LinearProgress } from "@mui/material";
+import { LinearProgress, ToggleButton } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { Bounce, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ToggleButtons from "../components/ToggleButton";
 
-const API_BASE_URL = "https://beep-didm.onrender.com/api";
+const API_BASE_URL = "https://beep-zlaa.onrender.com/api";
 function LinearProgressWithLabel(props) {
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -91,6 +92,7 @@ const Dash = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedPosition, setSelectedPosition] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState([]);
   const [users, setUsers] = useState([]);
   const [activeUsersCount, setActiveUsersCount] = useState("");
   const [inactiveUsersCount, setInactiveUsersCount] = useState("");
@@ -106,12 +108,8 @@ const Dash = () => {
   const [accessToken, setaccessToken] = useState(
     localStorage.getItem("accessToken")
   );
-  const [firstName, setfirstName] = useState(
-    localStorage.getItem("firstName")
-  );
-  const [lastName, setlastName] = useState(
-    localStorage.getItem("lastName")
-  );
+  const [firstName, setfirstName] = useState(localStorage.getItem("firstName"));
+  const [lastName, setlastName] = useState(localStorage.getItem("lastName"));
 
   useEffect(() => {
     setrefreshToken(localStorage.getItem("refreshToken"));
@@ -120,12 +118,14 @@ const Dash = () => {
     setlastName(localStorage.getItem("lastName"));
   }, []);
 
-  useEffect(() => {
-    // Function to refresh the access token
-    const refreshTokenf = async () => {
+
+
+
+
+const refreshTokenf = async () => {
       try {
         const response = await axios.post(
-          "https://beep-didm.onrender.com/api/auth/refresh-token",
+          "https://beep-zlaa.onrender.com/api/auth/refresh-token",
           {
             refreshToken: refreshToken,
           }
@@ -134,7 +134,7 @@ const Dash = () => {
         setaccessToken(accessToken);
         localStorage.setItem("accessToken", accessToken);
         const positionsResponse = await axios.get(
-          "https://beep-didm.onrender.com/api/positions",
+          "https://beep-zlaa.onrender.com/api/positions",
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -146,9 +146,10 @@ const Dash = () => {
         const specialtiesData = positionsResponse.data; // Access the data directly
         setSpecialties(specialtiesData);
         setIsLoading(false);
+
         // Now fetch users with the updated access token
         axios
-          .get("https://beep-didm.onrender.com/api/users", {
+          .get("https://beep-zlaa.onrender.com/api/users", {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -156,7 +157,6 @@ const Dash = () => {
           .then((response) => {
             // Handle successful response, update state with users data
             setUsers(response.data);
-
           })
           .catch((error) => {
             console.error("Error fetching users:", error);
@@ -172,10 +172,22 @@ const Dash = () => {
         // Handle token refresh failure, maybe redirect to login page
       }
     };
+    useEffect(() => {
+      refreshTokenf().then(() => countUserStatus());
 
-    // Call refreshToken function before fetching users
-    refreshTokenf().then(() => countUserStatus());
-  }, []);
+      const updateCounter = (event) => {
+        refreshTokenf().then(() => countUserStatus());
+
+      };
+  
+      document.addEventListener('customEvent', updateCounter);
+  
+      return () => {
+        document.removeEventListener('customEvent', updateCounter);
+      };
+    }, []);
+  
+
 
   const findItemById = (id) => {
     const itemId = id;
@@ -191,7 +203,7 @@ const Dash = () => {
   const addUser = async () => {
     try {
       const response = await axios.post(
-        "https://beep-didm.onrender.com/api/auth/refresh-token",
+        "https://beep-zlaa.onrender.com/api/auth/refresh-token",
         {
           refreshToken: refreshToken,
         }
@@ -203,7 +215,7 @@ const Dash = () => {
       // Now fetch users with the updated access token
       axios
         .post(
-          "https://beep-didm.onrender.com/api/users",
+          "https://beep-zlaa.onrender.com/api/users",
           {
             ...userForm,
             positionID: selectedPosition,
@@ -217,10 +229,10 @@ const Dash = () => {
         .then((response) => {
           // Handle successful response
           console.log("Response Data:", response.data);
-        
+
           // Retrieve the password from the response data
           const { password } = response.data.newUser;
-        
+
           // Reset the user form after successful submission
           setUserForm({
             firstName: "",
@@ -228,11 +240,12 @@ const Dash = () => {
             positionID: "",
             email: "",
             phone: "",
+            floor: [],
           });
-        
+
           // Fetch user data again to refresh
           axios
-            .get("https://beep-didm.onrender.com/api/users", {
+            .get("https://beep-zlaa.onrender.com/api/users", {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
@@ -255,17 +268,17 @@ const Dash = () => {
                 },
               });
             });
-        
+
           setError("");
           setIsLoading(false); // Set loading state to false after request completes
         })
-        
+
         .catch((error) => {
           console.error("Error adding user:", error);
-        
+
           // Extract error message from the response
           const errorMessage = error.response.data.error.message;
-        
+
           toast.error(`Failed to add: ${errorMessage}`, {
             position: "top-right",
             autoClose: 5000,
@@ -280,19 +293,20 @@ const Dash = () => {
               height: "2px", // Set the height of the bottom bar of the progress indicator to 2px
             },
           });
-        
+
           setIsLoading(false); // Set loading state to false after request completes
         });
-        
     } catch (error) {
       console.error("Error refreshing token:", error);
       // Handle token refresh failure, maybe redirect to login page
     }
   };
+
   const addRoom = async () => {
+    console.log('tapped');
     try {
       const response = await axios.post(
-        "https://beep-didm.onrender.com/api/auth/refresh-token",
+        "https://beep-zlaa.onrender.com/api/auth/refresh-token",
         {
           refreshToken: refreshToken,
         }
@@ -302,12 +316,15 @@ const Dash = () => {
       localStorage.setItem("accessToken", accessToken);
 
       // Now fetch users with the updated access token
+    console.log('here');
+
       axios
         .post(
-          "https://beep-didm.onrender.com/api/rooms",
+          "https://beep-zlaa.onrender.com/api/rooms",
           {
-            "roomNumber": RoomNumber.toString(),
-            "roomType":  RoomType.toString(),
+            roomNumber: RoomNumber.toString(),
+            roomType: RoomType.toString(),
+            floor:parseInt(FloorNumber),
           },
           {
             headers: {
@@ -317,13 +334,13 @@ const Dash = () => {
         )
         .then((response) => {
           // Handle successful response
+    console.log('ok');
+
           console.log("Response Data:", response.data);
-       
-        
-         
+
           // Fetch user data again to refresh
           axios
-            .get("https://beep-didm.onrender.com/api/users", {
+            .get("https://beep-zlaa.onrender.com/api/users", {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
@@ -346,17 +363,17 @@ const Dash = () => {
                 },
               });
             });
-        
+
           setError("");
           setIsLoading(false); // Set loading state to false after request completes
         })
-        
+
         .catch((error) => {
           console.error("Failed to add:", error);
-        
+
           // Extract error message from the response
           const errorMessage = error.response.data.error.message;
-        
+
           toast.error(`Failed to add: ${errorMessage}`, {
             position: "top-right",
             autoClose: 5000,
@@ -371,10 +388,9 @@ const Dash = () => {
               height: "2px", // Set the height of the bottom bar of the progress indicator to 2px
             },
           });
-        
+
           setIsLoading(false); // Set loading state to false after request completes
         });
-        
     } catch (error) {
       console.error("Error refreshing token:", error);
       // Handle token refresh failure, maybe redirect to login page
@@ -383,7 +399,7 @@ const Dash = () => {
   const addSpeciality = async () => {
     try {
       const response = await axios.post(
-        "https://beep-didm.onrender.com/api/auth/refresh-token",
+        "https://beep-zlaa.onrender.com/api/auth/refresh-token",
         {
           refreshToken: refreshToken,
         }
@@ -395,9 +411,9 @@ const Dash = () => {
       // Now fetch users with the updated access token
       axios
         .post(
-          "https://beep-didm.onrender.com/api/positions",
+          "https://beep-zlaa.onrender.com/api/positions",
           {
-            "positionName": Speciality.toString(),
+            positionName: Speciality.toString(),
           },
           {
             headers: {
@@ -408,12 +424,10 @@ const Dash = () => {
         .then((response) => {
           // Handle successful response
           console.log("Response Data:", response.data);
-       
-        
-         
+
           // Fetch user data again to refresh
           axios
-            .get("https://beep-didm.onrender.com/api/users", {
+            .get("https://beep-zlaa.onrender.com/api/users", {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
@@ -436,17 +450,17 @@ const Dash = () => {
                 },
               });
             });
-        
+
           setError("");
           setIsLoading(false); // Set loading state to false after request completes
         })
-        
+
         .catch((error) => {
           console.error("Failed to add:", error);
-        
+
           // Extract error message from the response
           const errorMessage = error.response.data.error.message;
-        
+
           toast.error(`Failed to add: ${errorMessage}`, {
             position: "top-right",
             autoClose: 5000,
@@ -461,10 +475,9 @@ const Dash = () => {
               height: "2px", // Set the height of the bottom bar of the progress indicator to 2px
             },
           });
-        
+
           setIsLoading(false); // Set loading state to false after request completes
         });
-        
     } catch (error) {
       console.error("Error refreshing token:", error);
       // Handle token refresh failure, maybe redirect to login page
@@ -557,11 +570,13 @@ const Dash = () => {
     positionID: "",
     email: "",
     phone: "",
+    floor: [],
   });
 
-  const [RoomNumber, setRoomNumber] = useState('');
-  const [RoomType, setRoomType] = useState('');
-  const [Speciality, setSpeciality] = useState('');
+  const [RoomNumber, setRoomNumber] = useState("");
+  const [FloorNumber, setFloorNumber] = useState("");
+  const [RoomType, setRoomType] = useState("");
+  const [Speciality, setSpeciality] = useState("");
   const handlePhoneChange = (e) => {
     const inputPhone = e.target.value;
     // Remove any non-digit characters from the input
@@ -572,10 +587,80 @@ const Dash = () => {
       setUserForm({ ...userForm, phone: formattedPhone });
     }
   };
+  const [floors, setFloors] = useState([]);
+  const fetchFloors = async () => {
+    try {
+      const response = await axios.post(
+        "https://beep-zlaa.onrender.com/api/auth/refresh-token",
+        {
+          refreshToken: refreshToken,
+        }
+      );
+      const { accessToken } = response.data;
+      setaccessToken(accessToken);
+      localStorage.setItem("accessToken", accessToken);
+
+      axios
+        .get("https://beep-zlaa.onrender.com/api/rooms/floors", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+        .then((response) => {
+          // Handle successful response, update state with users data
+          setFloors(response.data);
+          console.log(floors);
+
+          setError("");
+          setIsLoading(false); // Set loading state to false after request completes
+        });
+    } catch (error) {
+      console.error("Error fetching floors data:", error);
+    }
+  };
+
+  // useEffect to call fetchFloors when the component mounts
+  useEffect(() => {
+    fetchFloors();
+  }, []);
+  const scrollContainerRef = useRef(null);
+
+  const handleMouseDown = (event) => {
+    const container = scrollContainerRef.current;
+    container.isMouseDown = true;
+    container.startX = event.pageX - container.offsetLeft;
+    container.scrollLeft = container.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    const container = scrollContainerRef.current;
+    container.isMouseDown = false;
+  };
+
+  const handleMouseUp = () => {
+    const container = scrollContainerRef.current;
+    container.isMouseDown = false;
+  };
+
+  const handleMouseMove = (event) => {
+    const container = scrollContainerRef.current;
+    if (!container.isMouseDown) return;
+    event.preventDefault();
+    const x = event.pageX - container.offsetLeft;
+    const walk = (x - container.startX) * 2; // Scroll speed
+    container.scrollLeft = container.scrollLeft - walk;
+  };
+
+  const handleItemClick = (floor) => {
+    setSelectedFloor((prevSelectedFloors) =>
+      prevSelectedFloors.includes(floor)
+        ? prevSelectedFloors.filter((f) => f !== floor)
+        : [...prevSelectedFloors, floor]
+    );
+  };
 
   return (
     <div className="bigcolumn">
-    
       <ToastContainer />
       <div className="dashrow">
         <motion.h1
@@ -700,7 +785,7 @@ const Dash = () => {
           <div className="bellrow">
             <img className="userprofileicon" src={userprofile}></img>
             <div className="profilecolumn">
-              <span className="name">  {firstName.toString()}</span>
+              <span className="name"> {firstName.toString()}</span>
               <span className="role">Admin</span>
             </div>
           </div>
@@ -736,12 +821,12 @@ const Dash = () => {
           style={{
             display: "flex",
             flexDirection: "row",
-            paddingRight:localStorage.getItem("selectedOptionlang") === "Eng(US)"
+            paddingRight:
+              localStorage.getItem("selectedOptionlang") === "Eng(US)"
                 ? "0%"
                 : localStorage.getItem("selectedOptionlang") === "Ar(DZ)"
                 ? "0%"
                 : "0%",
-           
           }}
         >
           <motion.div
@@ -835,6 +920,7 @@ const Dash = () => {
             </motion.div>
           </motion.div>
         </div>
+
         {showContainercontrol && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -859,7 +945,7 @@ const Dash = () => {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-               <div
+              <div
                 style={{
                   display: "flex",
                   flexDirection: "row",
@@ -869,7 +955,90 @@ const Dash = () => {
                   height: "10%",
                 }}
               >
-                
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    marginTop: "-5px",
+                    justifyContent: "start",
+                    width: "5%",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontFamily: "outfitmed",
+                      color: "#1f1f1f",
+                    }}
+                  >
+                    {t("logintext69")}
+                  </span>
+                </div>
+                <div style={{ width: "100px" }}></div>
+                <div
+                  style={{
+                    height: "100%",
+                    width: "80%",
+                    padding: "10px",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  className="input-back-color"
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
+                      width: "90%",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        marginLeft: "20px",
+                        marginTop: "5px",
+                        justifyContent: "start",
+                        width: "100%",
+                      }}
+                    ></div>
+                    <div style={{ marginLeft: "5px", marginTop: "4px" }}>
+                      <input
+                        className="input-create-style1"
+                        placeholder={t("logintext70")}
+                        type="text"
+                        style={{ fontFamily: "outfitmed" }}
+                        value={FloorNumber}
+                        onChange={(e) => setFloorNumber(e.target.value)}
+                      ></input>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "100%",
+                      width: "14%",
+                    }}
+                  ></div>
+                </div>
+              </div>
+              <div style={{ height: "50px" }}></div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  fontFamily: "outfit",
+                  marginTop: "20px",
+                  width: "100%",
+                  height: "10%",
+                }}
+              >
                 <div
                   style={{
                     display: "flex",
@@ -888,7 +1057,6 @@ const Dash = () => {
                   >
                     {t("logintext65")}
                   </span>
-                  
                 </div>
                 <div style={{ width: "100px" }}></div>
                 <div
@@ -928,9 +1096,7 @@ const Dash = () => {
                         type="text"
                         style={{ fontFamily: "outfitmed" }}
                         value={RoomNumber}
-                        onChange={(e) =>
-                          setRoomNumber(e.target.value)
-                        }
+                        onChange={(e) => setRoomNumber(e.target.value)}
                       ></input>
                     </div>
                   </div>
@@ -943,12 +1109,11 @@ const Dash = () => {
                       height: "100%",
                       width: "14%",
                     }}
-                  >
-                  
-                  </div>
+                  ></div>
                 </div>
               </div>
-              <div style={{height:'50px'}}></div>
+              <div style={{ height: "50px" }}></div>
+
               <div
                 style={{
                   display: "flex",
@@ -959,7 +1124,6 @@ const Dash = () => {
                   height: "10%",
                 }}
               >
-                
                 <div
                   style={{
                     display: "flex",
@@ -978,7 +1142,6 @@ const Dash = () => {
                   >
                     {t("logintext66")}
                   </span>
-                  
                 </div>
                 <div style={{ width: "100px" }}></div>
                 <div
@@ -1018,9 +1181,7 @@ const Dash = () => {
                         type="text"
                         style={{ fontFamily: "outfitmed" }}
                         value={RoomType}
-                        onChange={(e) =>
-                          setRoomType(e.target.value)
-                        }
+                        onChange={(e) => setRoomType(e.target.value)}
                       ></input>
                     </div>
                   </div>
@@ -1033,12 +1194,10 @@ const Dash = () => {
                       height: "100%",
                       width: "14%",
                     }}
-                  >
-                  
-                  </div>
+                  ></div>
                 </div>
               </div>
-              <div style={{height:'20px'}}></div>
+              <div style={{ height: "20px" }}></div>
               <motion.div
                 initial={{ x: 10, opacity: 0 }} // Initial position and opacity
                 animate={{ x: 0, opacity: 1 }} // Final position and opacity
@@ -1079,87 +1238,81 @@ const Dash = () => {
                   {t("logintext67")}
                 </motion.div>
               </motion.div>
-              <div style={{height:'50px'}}></div>
-               
+              <div style={{ height: "50px" }}></div>
+
               <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  marginTop: "-5px",
+                  justifyContent: "start",
+                  width: "fit-content",
+                }}
+              >
+                <span
                   style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    marginTop: "-5px",
-                    justifyContent: "start",
-                    width: "fit-content",
+                    fontSize: "20px",
+                    fontFamily: "outfitmed",
+                    color: "#1f1f1f",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: "20px",
-                      fontFamily: "outfitmed",
-                      color: "#1f1f1f",
-                      
-                    }}
-                  >
-                    {t("logintext68")}
-                  </span>
-                  
-                </div>
-                <div style={{height:'20px'}}></div>
+                  {t("logintext68")}
+                </span>
+              </div>
+              <div style={{ height: "20px" }}></div>
               <div
+                style={{
+                  height: "11%",
+                  width: "80%",
+                  padding: "10px",
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+                className="input-back-color"
+              >
+                <div
                   style={{
-                    height: "11%",
-                    width: "80%",
-                    padding: "10px",
                     display: "flex",
-                    flexDirection: "row",
+                    flexDirection: "column",
+                    height: "100%",
+                    width: "90%",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      marginLeft: "20px",
+                      marginTop: "5px",
+                      justifyContent: "start",
+                      width: "100%",
+                    }}
+                  ></div>
+                  <div style={{ marginLeft: "5px", marginTop: "4px" }}>
+                    <input
+                      className="input-create-style1"
+                      placeholder="Enter Speciality"
+                      type="text"
+                      style={{ fontFamily: "outfitmed" }}
+                      value={Speciality}
+                      onChange={(e) => setSpeciality(e.target.value)}
+                    ></input>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
+                    height: "100%",
+                    width: "14%",
                   }}
-                  className="input-back-color"
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      height: "100%",
-                      width: "90%",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        marginLeft: "20px",
-                        marginTop: "5px",
-                        justifyContent: "start",
-                        width: "100%",
-                      }}
-                    ></div>
-                    <div style={{ marginLeft: "5px", marginTop: "4px" }}>
-                      <input
-                        className="input-create-style1"
-                        placeholder="Enter Speciality"
-                        type="text"
-                        style={{ fontFamily: "outfitmed" }}
-                        value={Speciality}
-                        onChange={(e) =>
-                          setSpeciality(e.target.value)
-                        }
-                      ></input>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "100%",
-                      width: "14%",
-                    }}
-                  >
-                  
-                  </div>
-                </div>
-                <motion.div
+                ></div>
+              </div>
+              <motion.div
                 initial={{ x: 10, opacity: 0 }} // Initial position and opacity
                 animate={{ x: 0, opacity: 1 }} // Final position and opacity
                 transition={{ duration: 1, ease: "easeInOut" }}
@@ -1216,7 +1369,7 @@ const Dash = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="absolute-container"
               style={{
-                height: window.innerHeight * 0.6,
+                height: window.innerHeight * 0.8,
                 width: window.innerWidth * 0.5,
                 display: "flex",
                 flexDirection: "column",
@@ -1713,6 +1866,78 @@ const Dash = () => {
                   </div>
                 </div>
               </div>
+              <div style={{ height: "58px" }}></div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  width: "95%",
+                  height: "8%",
+                  marginRight: "8%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    marginLeft: "10%",
+                    marginTop: "-5px",
+                    justifyContent: "start",
+                    width: "5%",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontFamily: "outfitmed",
+                      color: "#1f1f1f",
+                    }}
+                  >
+                    {t("logintext71")}
+                  </span>
+                </div>
+                <div style={{ width: "80px" }}></div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    className="scroll-container"
+                    ref={scrollContainerRef}
+                    onMouseDown={handleMouseDown}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div className="scroll-content">
+                      {floors.map((floor, index) => (
+                        <div
+                          key={index}
+                          className={`scroll-item ${
+                            selectedFloor.includes(floor) ? "selected" : ""
+                          }`}
+                          onClick={() => handleItemClick(floor)}
+                        >
+                          {floor}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <motion.div
                 initial={{ x: 10, opacity: 0 }} // Initial position and opacity
                 animate={{ x: 0, opacity: 1 }} // Final position and opacity
@@ -2292,7 +2517,9 @@ const Dash = () => {
             <div className="col-activedoct">
               {users.map((user) => (
                 <DoctorRow
-                  key={user.id} // Assuming user has an id property
+                  key={user._id} // Assuming user has an id property
+                  userId={user._id} // Pass userId here
+
                   name={`${user.firstName} ${user.lastName}`}
                   status={user.isActive ? "Online" : "Offline"} // Assuming isActive indicates status
                   specialty={findItemById(user.positionID)} // Assuming positionId is the specialty
@@ -2308,6 +2535,10 @@ const Dash = () => {
 
 export default Dash;
 class DoctorRow extends Component {
+  handleClick = () => {
+    const event = new Event('customEvent');
+    document.dispatchEvent(event);
+  };
   render() {
     return (
       <>
@@ -2355,10 +2586,14 @@ class DoctorRow extends Component {
               </motion.span>
             </div>
           </div>
-
-          <div className="col-doctor-bip">
+   
+            <div className="col-doctor-bip" style={{justifyContent:"center",alignItems:'center'}}>
+            
             <div style={{ height: "10px" }}></div>
+            <div  onClick={this.handleClick} >
+          <ToggleButtons userId={this.props.userId}  />
 
+          </div>
             <motion.div
               initial={{ x: 10, opacity: 0 }} // Initial position and opacity
               animate={{ x: 0, opacity: 1 }} // Final position and opacity
@@ -2395,7 +2630,7 @@ class DoctorRow extends Component {
                 <img src={bipeur} className="doctor-img"></img>
               </motion.div>
             </motion.div>
-
+           
             <motion.div
               initial={{ x: 10, opacity: 0 }} // Initial position and opacity
               animate={{ x: 0, opacity: 1 }} // Final position and opacity

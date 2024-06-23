@@ -1,16 +1,13 @@
 import { Typewriter } from "react-simple-typewriter";
 import secure from "../assets/iconspassword1.svg";
-import { NavLink } from "react-router-dom";
 import React, { useState, useRef ,useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import phoneimg from "../assets/phonenum1.svg";
 import loginimage from "../assets/loginimage.jpeg";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import axios from "axios";
-
 import "../App.css";
-const Spline = React.lazy(() => import("@splinetool/react-spline"));
 
 function LoginPage() {
   const [isFocused, setIsFocused] = useState(false);
@@ -46,11 +43,11 @@ function LoginPage() {
     if (storedOption) {
       setSelectedOption(storedOption);
       // Here you can also update the language based on the stored option
-      if (storedOption === "Ar(DZ)") {
+      if (storedOption == "Ar(DZ)") {
         i18n.changeLanguage("ar");
-      } else if (storedOption === "Eng(US)") {
+      } else if (storedOption == "Eng(US)") {
         i18n.changeLanguage("en");
-      } else if (storedOption === "Fra(FR)") {
+      } else if (storedOption == "Fra(FR)") {
         i18n.changeLanguage("fr");
       }
     }
@@ -67,7 +64,7 @@ function LoginPage() {
     console.log('ok');
     try {
       const response = await axios.post(
-        "https://beep-didm.onrender.com/api/auth/login",
+        "https://beep-zlaa.onrender.com/api/auth/login",
         {
           email: phone,
           password: passw,
@@ -508,7 +505,7 @@ function LoginPage() {
                         fontSize: "14px",
                         transition: "background-color 0.3s",
                         backgroundColor:
-                          selectedOption === specialty
+                          selectedOption == specialty
                             ? "#f0f5f5"
                             : "transparent",
                       }}
